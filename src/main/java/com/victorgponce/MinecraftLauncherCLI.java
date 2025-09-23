@@ -36,7 +36,7 @@ public class MinecraftLauncherCLI {
         System.out.println("=== Minecraft CLI Launcher ===");
 
         // Authentication
-        Optional<AuthInfos> auth = launcher.authManager.authenticate(options.offlineMode);
+        Optional<AuthInfos> auth = launcher.authManager.authenticate(options.offlineMode, options.offlineUsername);
         if (auth.isEmpty()) {
             System.err.println("Authentication failed. Exiting.");
             System.exit(1);

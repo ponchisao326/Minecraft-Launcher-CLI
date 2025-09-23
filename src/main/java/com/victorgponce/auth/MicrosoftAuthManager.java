@@ -25,30 +25,27 @@ public class MicrosoftAuthManager {
         this.logger = logger;
     }
 
-    /**
-     * Authenticate the user, either via Microsoft or offline mode.
-     * @param forceOffline If true, forces offline mode without attempting Microsoft authentication.
-     * @return AuthInfos if authentication was successful, empty Optional otherwise.
-     */
-    public Optional<AuthInfos> authenticate(boolean forceOffline) {
+    public Optional<AuthInfos> authenticate(boolean forceOffline, String offlineUsername) {
         var saver = config.getSaver();
 
         if (forceOffline) {
-            // Always use offline, skip Microsoft auth
-            System.out.print("Enter username for offline mode: ");
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-                String username = reader.readLine();
-                AuthInfos info = new AuthInfos(username, UUID.randomUUID().toString(), UUID.randomUUID().toString());
-                saver.set("offline-username", username);
-                saver.save();
-                System.out.println("✓ Using offline mode for user: " + username);
-                return Optional.of(info);
-            } catch (IOException ioException) {
-                System.err.println("Failed to read username. Exiting...");
-                logger.err("Failed to read username for offline mode: " + ioException.getMessage());
-                return Optional.empty();
+            String finalUsername = offlineUsername;
+            if (finalUsername == null || finalUsername.isEmpty()) {
+                System.out.print("Enter username for offline mode: ");
+                try {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                    finalUsername = reader.readLine();
+                } catch (IOException ioException) {
+                    System.err.println("Failed to read username. Exiting...");
+                    logger.err("Failed to read username for offline mode: " + ioException.getMessage());
+                    return Optional.empty();
+                }
             }
+            AuthInfos info = new AuthInfos(finalUsername, UUID.randomUUID().toString(), UUID.randomUUID().toString());
+            saver.set("offline-username", finalUsername);
+            saver.save();
+            System.out.println("✓ Using offline mode for user: " + finalUsername);
+            return Optional.of(info);
         }
 
         // Normal logic (refresh token, fallback to offline, etc)
@@ -106,26 +103,26 @@ public class MicrosoftAuthManager {
             logger.err("Microsoft authentication failed: " + e.getMessage());
             System.err.println("Authentication failed: " + e.getMessage());
             System.err.println("Falling back to offline mode...");
-            System.out.print("Enter username for offline mode: ");
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-                String username = reader.readLine();
-                AuthInfos info = new AuthInfos(username, UUID.randomUUID().toString(), UUID.randomUUID().toString());
-                saver.set("offline-username", username);
-                saver.save();
-                System.out.println("✓ Using offline mode for user: " + username);
-                return Optional.of(info);
-            } catch (IOException ioException) {
-                System.err.println("Failed to read username. Exiting...");
-                logger.err("Failed to read username for offline mode: " + ioException.getMessage());
-                return Optional.empty();
+            String finalUsername = offlineUsername;
+            if (finalUsername == null || finalUsername.isEmpty()) {
+                System.out.print("Enter username for offline mode: ");
+                try {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                    finalUsername = reader.readLine();
+                } catch (IOException ioException) {
+                    System.err.println("Failed to read username. Exiting...");
+                    logger.err("Failed to read username for offline mode: " + ioException.getMessage());
+                    return Optional.empty();
+                }
             }
+            AuthInfos info = new AuthInfos(finalUsername, UUID.randomUUID().toString(), UUID.randomUUID().toString());
+            saver.set("offline-username", finalUsername);
+            saver.save();
+            System.out.println("✓ Using offline mode for user: " + finalUsername);
+            return Optional.of(info);
         }
     }
 
-    /**
-     * Logs out the current user by clearing stored tokens and usernames.
-     */
     public void logout() {
         var saver = config.getSaver();
         saver.remove("msAccessToken");

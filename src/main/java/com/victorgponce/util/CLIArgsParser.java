@@ -14,14 +14,10 @@ public class CLIArgsParser {
         public String modsFile = null;
         public int maxRam = 2048;
         public Path launcherDir = Paths.get(System.getProperty("user.dir"), "Minecraft-CLI-Launcher");
-        public boolean offlineMode = false; // New argument
+        public boolean offlineMode = false;
+        public String offlineUsername = null; // NEW
     }
 
-    /**
-     * Parses command-line arguments into a CLIOptions object.
-     * @param args Command-line arguments.
-     * @return Parsed CLIOptions.
-     */
     public static CLIOptions parseArgs(String[] args) {
         CLIOptions options = new CLIOptions();
         for (int i = 0; i < args.length; i++) {
@@ -43,6 +39,10 @@ public class CLIArgsParser {
                     break;
                 case "--offline":
                     options.offlineMode = true;
+                    // Check if next argument exists and is not a flag
+                    if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                        options.offlineUsername = args[++i];
+                    }
                     break;
                 case "--help":
                     printHelp();
@@ -57,9 +57,6 @@ public class CLIArgsParser {
         return options;
     }
 
-    /**
-     * Prints help message to the console.
-     */
     private static void printHelp() {
         System.out.println("""
                 Usage: java -jar MinecraftLauncherCLI.jar [options]
@@ -69,7 +66,7 @@ public class CLIArgsParser {
                   --mods <file>                Path to mods JSON/TXT file
                   --max-ram <MB>               Max RAM for JVM (default: 2048)
                   --launcher-dir <dir>         Custom launcher working directory
-                  --offline                    Force offline mode (skip Microsoft login)
+                  --offline [username]         Force offline mode (skip Microsoft login). If username is provided, uses it directly.
                   --help                       Show this help message
                 """);
     }
